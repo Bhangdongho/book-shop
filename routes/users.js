@@ -1,6 +1,7 @@
-const express = require('express');
+const express = require('express'); // express 모듈
 const router = express.Router();
-const conn = require('../mariadb');
+const conn = require('../mariadb'); // db 모듈
+const { StatusCodes } = require('http-status-codes'); // status code 모듈
 
 router.use(express.json());
 
@@ -14,13 +15,11 @@ router.post('/join', (req, res) => {
   conn.query(sql, values, (err, results) => {
     if (err) {
       console.log(err);
-      return res.status(400).end(); // BAD REQUEST
+      return res.status(StatusCodes.BAD_REQUEST).end();
     }
 
-    res.status(201).json(results);
+    return res.status(StatusCodes.CREATED).json(results);
   });
-
-  res.json('회원가입');
 });
 
 // 로그인
