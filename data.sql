@@ -84,7 +84,6 @@ const order_id = SELECT max(id) FROM orders;
 // 주문 상세 목록 입력
 INSERT INTO orderedBook (order_id, book_id, quantity)
 VALUES (order_id, 1, 1);
-
 INSERT INTO orderedBook (order_id, book_id, quantity)
 VALUES (order_id, 3, 2);
 
