@@ -5,38 +5,37 @@ const order = (req, res) => {
   const { items, delivery, totalQuantity, totalPrice, userId, firstBookTitle } =
     req.body;
 
-  let delivery_id = 4;
-  let order_id = 2;
+  let delivery_id;
+  let order_id;
 
   let sql =
     'INSERT INTO delivery (address, receiver, contact) VALUES (?, ?, ?)';
   let values = [delivery.address, delivery.receiver, delivery.contact];
-  //   conn.query(sql, values, (err, results) => {
-  //     if (err) {
-  //       console.log(err);
-  //       return res.status(StatusCodes.BAD_REQUEST).end();
-  //     }
+  conn.query(sql, values, (err, results) => {
+    if (err) {
+      console.log(err);
+      return res.status(StatusCodes.BAD_REQUEST).end();
+    }
 
-  //     delivery_id = results.insertId;
+    delivery_id = results.insertId;
+    console.log('results.insertId', results.insertId);
+    console.log('conn.query - delivery_id', delivery_id);
+  });
 
-  //     return res.status(StatusCodes.OK).json(results);
-  //   });
+  console.log('out - delivery_id', delivery_id);
 
   sql = `
   INSERT INTO orders (book_title, total_quantity, total_price, user_id, delivery_id)
   VALUES (?, ?, ?, ?, ?)`;
   values = [firstBookTitle, totalQuantity, totalPrice, userId, delivery_id];
-  //   conn.query(sql, values, (err, results) => {
-  //     if (err) {
-  //       console.log(err);
-  //       return res.status(StatusCodes.BAD_REQUEST).end();
-  //     }
+  conn.query(sql, values, (err, results) => {
+    if (err) {
+      console.log(err);
+      return res.status(StatusCodes.BAD_REQUEST).end();
+    }
 
-  //     order_id = results.insertId;
-  //     console.log(order_id);
-
-  //     return res.status(StatusCodes.OK).json(results);
-  //   });
+    order_id = results.insertId;
+  });
 
   sql = `INSERT INTO orderedBook (order_id, book_id, quantity) VALUES ?`;
 
@@ -44,15 +43,12 @@ const order = (req, res) => {
   values = [];
   items.forEach((item) => {
     values.push([order_id, item.book_id, item.quantity]);
-    console.log(values);
   });
   conn.query(sql, [values], (err, results) => {
     if (err) {
       console.log(err);
       return res.status(StatusCodes.BAD_REQUEST).end();
     }
-
-    delivery_id = results.insertId;
 
     return res.status(StatusCodes.OK).json(results);
   });
