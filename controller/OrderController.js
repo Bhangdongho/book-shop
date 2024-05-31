@@ -1,7 +1,16 @@
-const conn = require('../mariadb'); // db 모듈
+// const conn = require('../mariadb'); // db 모듈
+const mariadb = require('mysql2/promise');
 const { StatusCodes } = require('http-status-codes'); // status code 모듈
 
 const order = async (req, res) => {
+  const conn = await mariadb.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'root',
+    database: 'Bookshop',
+    dateStrings: true
+  });
+
   const { items, delivery, totalQuantity, totalPrice, userId, firstBookTitle } =
     req.body;
 
@@ -12,16 +21,7 @@ const order = async (req, res) => {
     'INSERT INTO delivery (address, receiver, contact) VALUES (?, ?, ?)';
   let values = [delivery.address, delivery.receiver, delivery.contact];
 
-  let [results] = await conn.query(sql, values, (err, results) => {
-    if (err) {
-      console.log(err);
-      return res.status(StatusCodes.BAD_REQUEST).end();
-    }
-
-    delivery_id = results.insertId;
-    console.log('results.insertId', results.insertId);
-    console.log('conn.query - delivery_id', delivery_id);
-  });
+  let [results] = await conn.query(sql, values);
 
   console.log(results);
 
