@@ -38,9 +38,8 @@ const order = async (req, res) => {
     values.push([order_id, item.book_id, item.quantity]);
   });
 
-  [results] = await conn.query(sql, [values]);
-
-  return res.status(StatusCodes.OK).json(results);
+  results = await conn.query(sql, [values]);
+  return res.status(StatusCodes.OK).json(results[0]);
 };
 
 const getOrders = (req, res) => {

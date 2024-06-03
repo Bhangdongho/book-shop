@@ -89,3 +89,5 @@ VALUES (order_id, 3, 2);
 
 SELECT max(id) FROM Bookshop.orderedBook;
 SELECT last_insert_id();
+
+SET FOREIGN_KEY_CHECKS = 0;
