@@ -90,4 +90,8 @@ VALUES (order_id, 3, 2);
 SELECT max(id) FROM Bookshop.orderedBook;
 SELECT last_insert_id();
 
+// FOREIGN_KEY 무효화
 SET FOREIGN_KEY_CHECKS = 0;
+
+// 결제된 도서 장바구니 삭제
+DELETE FROM cartItems WHERE id IN (1,2,3)
