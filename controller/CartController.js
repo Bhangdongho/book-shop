@@ -1,7 +1,7 @@
-const jwt = require("jsonwebtoken");
-const conn = require("../mariadb"); // db 모듈
-const { StatusCodes } = require("http-status-codes"); // status code 모듈
-const dotenv = require("dotenv"); // dotenv 모듈
+const jwt = require('jsonwebtoken');
+const conn = require('../mariadb'); // db 모듈
+const { StatusCodes } = require('http-status-codes'); // status code 모듈
+const dotenv = require('dotenv'); // dotenv 모듈
 dotenv.config();
 
 // 장바구니 담기
@@ -11,7 +11,7 @@ const addToCart = (req, res) => {
   let authorization = ensureAuthorization(req, res);
 
   let sql =
-    "INSERT INTO cartItems (book_id, quantity, user_id) VALUES (?, ?, ?)";
+    'INSERT INTO cartItems (book_id, quantity, user_id) VALUES (?, ?, ?)';
   let values = [book_id, quantity, authorization.id];
   conn.query(sql, values, (err, results) => {
     if (err) {
@@ -29,26 +29,32 @@ const getCartItems = (req, res) => {
 
   let authorization = ensureAuthorization(req, res);
 
-  let sql = `SELECT cartItems.id, book_id, title, summary, quantity, price  
+  if (authorization instanceof jwt.TokenExpiredError) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      message: '로그인 세션이 만료되었습니다. 다시 로그인 하세요.'
+    });
+  } else {
+    let sql = `SELECT cartItems.id, book_id, title, summary, quantity, price  
                 FROM cartItems LEFT JOIN books 
                 ON cartItems.book_id = books.id
                 WHERE user_id=? AND cartItems.id IN (?)`;
-  let values = [authorization.id, selected];
-  conn.query(sql, values, (err, results) => {
-    if (err) {
-      console.log(err);
-      return res.status(StatusCodes.BAD_REQUEST).end();
-    }
+    let values = [authorization.id, selected];
+    conn.query(sql, values, (err, results) => {
+      if (err) {
+        console.log(err);
+        return res.status(StatusCodes.BAD_REQUEST).end();
+      }
 
-    return res.status(StatusCodes.OK).json(results);
-  });
+      return res.status(StatusCodes.OK).json(results);
+    });
+  }
 };
 
 // 장바구니 아이템 삭제
 const removeCartItem = (req, res) => {
   const cartItemId = req.params.id; // cartItemId
 
-  let sql = "DELETE FROM cartItems WHERE id = ?;";
+  let sql = 'DELETE FROM cartItems WHERE id = ?;';
   conn.query(sql, cartItemId, (err, results) => {
     if (err) {
       console.log(err);
@@ -61,8 +67,8 @@ const removeCartItem = (req, res) => {
 
 function ensureAuthorization(req, res) {
   try {
-    let receivedJwt = req.headers["authorization"];
-    console.log("received jwt : ", receivedJwt);
+    let receivedJwt = req.headers['authorization'];
+    console.log('received jwt : ', receivedJwt);
 
     let decodedJwt = jwt.verify(receivedJwt, process.env.PRIVATE_KEY);
     console.log(decodedJwt);
@@ -72,9 +78,7 @@ function ensureAuthorization(req, res) {
     console.log(err.name);
     console.log(err.message);
 
-    return res.status(StatusCodes.UNAUTHORIZED).json({
-      message: "로그인 세션이 만료되었습니다. 다시 로그인 하세요."
-    });
+    return err;
   }
 }
 
