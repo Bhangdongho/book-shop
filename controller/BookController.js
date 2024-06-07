@@ -61,6 +61,7 @@ const bookDetail = (req, res) => {
     });
   } else if (authorization instanceof ReferenceError) {
     let book_id = req.params.id;
+
     let sql = `SELECT *,
     (SELECT count(*) FROM likes WHERE liked_book_id=books.id) AS likes
     FROM books 
