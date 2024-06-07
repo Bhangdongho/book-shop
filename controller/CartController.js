@@ -1,17 +1,17 @@
-const jwt = require('jsonwebtoken');
-const conn = require('../mariadb'); // db 모듈
-const { StatusCodes } = require('http-status-codes'); // status code 모듈
-const dotenv = require('dotenv'); // dotenv 모듈
+const jwt = require("jsonwebtoken");
+const conn = require("../mariadb"); // db 모듈
+const { StatusCodes } = require("http-status-codes"); // status code 모듈
+const dotenv = require("dotenv"); // dotenv 모듈
 dotenv.config();
 
 // 장바구니 담기
 const addToCart = (req, res) => {
   const { book_id, quantity, user_id } = req.body;
 
-  let authorization = ensureAuthorization(req);
+  let authorization = ensureAuthorization(req, res);
 
   let sql =
-    'INSERT INTO cartItems (book_id, quantity, user_id) VALUES (?, ?, ?)';
+    "INSERT INTO cartItems (book_id, quantity, user_id) VALUES (?, ?, ?)";
   let values = [book_id, quantity, authorization.id];
   conn.query(sql, values, (err, results) => {
     if (err) {
@@ -27,7 +27,7 @@ const addToCart = (req, res) => {
 const getCartItems = (req, res) => {
   const { selected } = req.body; // selected = [1, 3]
 
-  let authorization = ensureAuthorization(req);
+  let authorization = ensureAuthorization(req, res);
 
   let sql = `SELECT cartItems.id, book_id, title, summary, quantity, price  
                 FROM cartItems LEFT JOIN books 
@@ -44,11 +44,11 @@ const getCartItems = (req, res) => {
   });
 };
 
-// 장바구니 도서 삭제
+// 장바구니 아이템 삭제
 const removeCartItem = (req, res) => {
   const cartItemId = req.params.id; // cartItemId
 
-  let sql = 'DELETE FROM cartItems WHERE id = ?;';
+  let sql = "DELETE FROM cartItems WHERE id = ?;";
   conn.query(sql, cartItemId, (err, results) => {
     if (err) {
       console.log(err);
@@ -59,14 +59,23 @@ const removeCartItem = (req, res) => {
   });
 };
 
-function ensureAuthorization(req) {
-  let receivedJwt = req.headers['authorization'];
-  console.log('received jwt : ', receivedJwt);
+function ensureAuthorization(req, res) {
+  try {
+    let receivedJwt = req.headers["authorization"];
+    console.log("received jwt : ", receivedJwt);
 
-  let decodedJwt = jwt.verify(receivedJwt, process.env.PRIVATE_KEY);
-  console.log(decodedJwt);
+    let decodedJwt = jwt.verify(receivedJwt, process.env.PRIVATE_KEY);
+    console.log(decodedJwt);
 
-  return decodedJwt;
+    return decodedJwt;
+  } catch (err) {
+    console.log(err.name);
+    console.log(err.message);
+
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "로그인 세션이 만료되었습니다. 다시 로그인 하세요."
+    });
+  }
 }
 
 module.exports = {
