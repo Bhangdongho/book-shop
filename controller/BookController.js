@@ -14,7 +14,7 @@ const allBooks = (req, res) => {
   let offset = limit * (currentPage - 1);
 
   let sql =
-    'SELECT *, (SELECT count(*) FROM likes WHERE books.id=liked_book_id) AS likes FROM books';
+    'SELECT SQL_CALC_FOUND_ROWS *, (SELECT count(*) FROM likes WHERE books.id=liked_book_id) AS likes FROM books';
   let values = [];
   if (category_id && news) {
     sql +=
@@ -30,18 +30,27 @@ const allBooks = (req, res) => {
 
   sql += ' LIMIT ? OFFSET ?';
   values.push(parseInt(limit), offset);
-
   conn.query(sql, values, (err, results) => {
+    if (err) {
+      console.log(err);
+      // return res.status(StatusCodes.BAD_REQUEST).end();
+    }
+    console.log(results);
+    // if (results.length) {
+    //   return res.status(StatusCodes.OK).json(results);
+    // } else {
+    //   return res.status(StatusCodes.NOT_FOUND).end();
+    // }
+  });
+
+  sql = 'SELECT found_rows()';
+  conn.query(sql, (err, results) => {
     if (err) {
       console.log(err);
       return res.status(StatusCodes.BAD_REQUEST).end();
     }
 
-    if (results.length) {
-      return res.status(StatusCodes.OK).json(results);
-    } else {
-      return res.status(StatusCodes.NOT_FOUND).end();
-    }
+    return res.status(StatusCodes.OK).json(results);
   });
 };
 
