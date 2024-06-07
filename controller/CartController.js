@@ -1,3 +1,4 @@
+const ensureAuthorization = require('../auth'); // 인증 모듈
 const jwt = require('jsonwebtoken');
 const conn = require('../mariadb'); // db 모듈
 const { StatusCodes } = require('http-status-codes'); // status code 모듈
@@ -78,23 +79,6 @@ const removeCartItem = (req, res) => {
     return res.status(StatusCodes.OK).json(results);
   });
 };
-
-function ensureAuthorization(req, res) {
-  try {
-    let receivedJwt = req.headers['authorization'];
-    console.log('received jwt : ', receivedJwt);
-
-    let decodedJwt = jwt.verify(receivedJwt, process.env.PRIVATE_KEY);
-    console.log(decodedJwt);
-
-    return decodedJwt;
-  } catch (err) {
-    console.log(err.name);
-    console.log(err.message);
-
-    return err;
-  }
-}
 
 module.exports = {
   addToCart,
