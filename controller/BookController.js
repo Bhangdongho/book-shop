@@ -5,6 +5,7 @@ const { StatusCodes } = require('http-status-codes'); // status code 모듈
 
 // (카테고리 별, 시간 여부) 전체 도서 목록 조회
 const allBooks = (req, res) => {
+  let allBooksRes = {};
   let { category_id, news, limit, currentPage } = req.query;
 
   // limit : page 당 도서 수     ex. 3
@@ -36,11 +37,11 @@ const allBooks = (req, res) => {
       // return res.status(StatusCodes.BAD_REQUEST).end();
     }
     console.log(results);
-    // if (results.length) {
-    //   return res.status(StatusCodes.OK).json(results);
-    // } else {
-    //   return res.status(StatusCodes.NOT_FOUND).end();
-    // }
+    if (results.length) {
+      allBooksRes.books = results;
+    } else {
+      return res.status(StatusCodes.NOT_FOUND).end();
+    }
   });
 
   sql = 'SELECT found_rows()';
@@ -50,7 +51,13 @@ const allBooks = (req, res) => {
       return res.status(StatusCodes.BAD_REQUEST).end();
     }
 
-    return res.status(StatusCodes.OK).json(results);
+    let pagination = {};
+    pagination.currentPage = parseInt(currentPage);
+    pagination.totalCount = results[0]['found_rows()'];
+
+    allBooksRes.pagination = pagination;
+
+    return res.status(StatusCodes.OK).json(allBooksRes);
   });
 };
 
