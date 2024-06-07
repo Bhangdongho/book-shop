@@ -59,6 +59,27 @@ const bookDetail = (req, res) => {
     return res.status(StatusCodes.BAD_REQUEST).json({
       message: '잘못된 토큰입니다.'
     });
+  } else if (authorization instanceof ReferenceError) {
+    let book_id = req.params.id;
+    let sql = `SELECT *,
+    (SELECT count(*) FROM likes WHERE liked_book_id=books.id) AS likes
+    FROM books 
+    LEFT JOIN category 
+    ON books.category_id = category.category_id 
+    WHERE books.id=?;`;
+    let values = [book_id];
+    conn.query(sql, values, (err, results) => {
+      if (err) {
+        console.log(err);
+        return res.status(StatusCodes.BAD_REQUEST).end();
+      }
+
+      if (results[0]) {
+        return res.status(StatusCodes.OK).json(results[0]);
+      } else {
+        return res.status(StatusCodes.NOT_FOUND).end();
+      }
+    });
   } else {
     let book_id = req.params.id;
 
