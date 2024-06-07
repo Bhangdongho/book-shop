@@ -56,7 +56,7 @@ const login = (req, res) => {
         },
         process.env.PRIVATE_KEY,
         {
-          expiresIn: '3m',
+          expiresIn: '10m',
           issuer: 'dongho'
         }
       );
